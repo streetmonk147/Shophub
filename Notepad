@@ -1,0 +1,314 @@
+Modern Next.js E‑Commerce Website – Step‑by‑Step Project Plan
+
+============================================================
+GOALS
+============================================================
+- Build a production‑grade, modern e‑commerce web app using ONLY Next.js (frontend + backend).
+- Showcase up‑to‑date design patterns, App Router usage, server actions, and modern React/TypeScript.
+- Implement real e‑commerce flows: product catalog, product detail, cart, checkout (mocked payments), orders, and account area.
+- Use high‑quality placeholder images from online sources for each page/section.
+
+
+============================================================
+TECH STACK & HIGH‑LEVEL ARCHITECTURE
+============================================================
+- Framework: Next.js (latest, App Router).
+- Language: TypeScript.
+- Styling: Tailwind CSS + CSS variables for theming.
+- Components/UI: Reusable design system components (buttons, inputs, cards, modals, navigation).
+- State Management:
+  - Client: React state + context (for cart badge, UI state).
+  - Server: Server Actions & cookies for cart/session where appropriate.
+- Data Layer:
+  - Start with in‑memory/JSON or filesystem “database” for products, categories, and users (no external DB to keep it 100% Next.js‑only).
+  - Abstract data access through typed repositories/services so it’s easy to swap to a real DB later.
+- Backend:
+  - Next.js Route Handlers (`app/api/**`) for products, cart operations, authentication, and orders.
+  - Server Actions for key mutations (add to cart, place order, update profile).
+- Auth:
+  - Simple email/password auth with hashed passwords stored in an in‑memory/JSON store + signed HTTP‑only cookies for sessions.
+- Images:
+  - Use `next/image` with remotePatterns configured.
+  - Placeholder assets from Unsplash/Pexels/Freepik/etc. (collected via web search).
+
+
+============================================================
+PROJECT STRUCTURE (PLANNED)
+============================================================
+- `app/`
+  - `layout.tsx` – Root layout, fonts, global providers, header/footer, theme.
+  - `page.tsx` – Home / Landing page.
+  - `(shop)/`
+    - `products/`
+      - `page.tsx` – Product listing (grid + filters/sorting).
+      - `[slug]/page.tsx` – Product detail page.
+    - `cart/page.tsx` – Cart page.
+    - `checkout/page.tsx` – Checkout flow.
+  - `(account)/`
+    - `login/page.tsx`
+    - `register/page.tsx`
+    - `profile/page.tsx`
+    - `orders/page.tsx`
+  - `(content)/`
+    - `about/page.tsx`
+    - `contact/page.tsx`
+  - `api/`
+    - `products/route.ts`
+    - `cart/route.ts`
+    - `auth/login/route.ts`
+    - `auth/register/route.ts`
+    - `orders/route.ts`
+- `lib/`
+  - `products.ts` – product data + repo methods.
+  - `auth.ts` – password hashing, session management helpers.
+  - `cart.ts` – cart logic helpers.
+  - `orders.ts` – order creation/retrieval.
+- `components/`
+  - `ui/` – generic UI kit (button, input, card, badge, modal, skeleton, etc.).
+  - `layout/` – header, footer, main layout components.
+  - `product/` – product card, product gallery, price tag, rating.
+  - `cart/` – cart summary, cart line item, mini cart dropdown.
+  - `forms/` – auth and checkout forms.
+- `public/` – logos, basic assets (favicons, etc.).
+
+
+============================================================
+PHASE 1 – PROJECT INITIALIZATION
+============================================================
+1. Create Next.js App
+   - Use `npx create-next-app@latest` with TypeScript, Tailwind, App Router enabled.
+   - Clean out boilerplate content and set up base `layout.tsx` and `page.tsx`.
+   - Configure global font (e.g., Inter, Geist, or Satoshi) via `next/font`.
+
+2. Configure Tailwind & Global Styles
+   - Set up Tailwind config with:
+     - Custom color palette (light/dark).
+     - Container widths, font sizes, spacing scale, border radius tokens.
+   - Create global styles in `globals.css`:
+     - Base typography.
+     - Smooth scrolling, selection color, and base background/foreground colors.
+
+3. Basic Layout & Navigation
+   - Implement `Header` with:
+     - Logo, main nav (Home, Shop, About, Contact).
+     - Search input.
+     - Cart icon with item count.
+     - Account dropdown (Login/Register or Profile/Logout).
+   - Implement `Footer` with:
+     - Links (About, Contact, Privacy, Terms).
+     - Social icons placeholders.
+   - Wire `layout.tsx` to wrap all routes with header/footer.
+
+
+============================================================
+PHASE 2 – DATA MODEL & BACKEND FOUNDATIONS
+============================================================
+4. Define Core Types & Mock Data
+   - Create TypeScript types:
+     - `Product`, `Category`, `User`, `CartItem`, `Order`, `OrderStatus`.
+   - Define static product catalog in `lib/products.ts`:
+     - At least 12–16 products across 3–4 categories.
+     - Include fields: name, slug, description, price, discount, images, badges (e.g., “New”, “Bestseller”), rating, stock, tags.
+   - Add helper functions:
+     - `getProducts`, `getProductBySlug`, `getFeaturedProducts`, `searchProducts`, `filterProducts`.
+
+5. Implement Backend Utilities
+   - `auth.ts`:
+     - Hash/verify password helpers (e.g., using a simple algorithm or Node crypto).
+     - Session cookie helpers (sign, verify, parse).
+   - `cart.ts`:
+     - Functions to manage cart stored in cookies or session (add, remove, update quantity, clear).
+   - `orders.ts`:
+     - Create order from cart, list orders for a user, get order details.
+
+6. Create API Routes (Route Handlers)
+   - `app/api/products/route.ts`:
+     - `GET` list products with optional query params (search, category, sort, price range).
+   - `app/api/cart/route.ts`:
+     - `GET` get cart.
+     - `POST` add/update/remove via action type payload.
+   - `app/api/auth/login/route.ts`:
+     - `POST` to authenticate user, set session cookie, return basic user info.
+   - `app/api/auth/register/route.ts`:
+     - `POST` to create user in memory store, hash password, set session cookie.
+   - `app/api/orders/route.ts`:
+     - `GET` list user’s orders.
+     - `POST` create new order from cart, simulate payment success.
+
+
+============================================================
+PHASE 3 – CORE PAGES & FLOWS
+============================================================
+7. Home / Landing Page (`app/page.tsx`)
+   - Hero section:
+     - Large headline, subheading, CTA buttons (Shop Now / Learn More).
+     - Background hero image from online placeholder (e.g., lifestyle, fashion, tech).
+   - Featured collections:
+     - Grid of 3–4 “collection” cards with background images.
+   - Featured products carousel:
+     - Use `getFeaturedProducts()` and display as horizontally scrollable cards.
+   - Highlight sections:
+     - Trust badges (Free Shipping, Secure Checkout, 24/7 Support).
+     - Testimonials slider with avatar images from placeholders.
+
+8. Product Listing Page (`app/(shop)/products/page.tsx`)
+   - Layout:
+     - Sidebar filters: Category, Price Range, Rating, Tags.
+     - Top bar: Sort by (Price, Popularity, Newest), search input.
+   - Product grid:
+     - Responsive grid of `ProductCard` components with image, title, price, badges.
+     - Skeleton loading states for smooth UX.
+   - Interactivity:
+     - Client‑side filters that call product API with query params.
+     - Pagination or infinite scroll (choose one, likely pagination for clarity).
+
+9. Product Detail Page (`app/(shop)/products/[slug]/page.tsx`)
+   - Image gallery:
+     - Main image + thumbnails (all placeholder images, per product).
+   - Details:
+     - Title, full description, price, discount, rating, stock indication.
+   - Actions:
+     - Quantity selector, Add to Cart button (server action or API call).
+     - Wishlist button (client state only, for showcasing UI).
+   - Related products section:
+     - Use category/tags to show related items.
+
+10. Cart Page (`app/(shop)/cart/page.tsx`)
+    - Show cart items with:
+      - Product image, name, selected variant (if any), price, quantity, subtotal.
+    - Allow:
+      - Update quantity, remove item, clear cart.
+    - Summary:
+      - Subtotal, estimated shipping, taxes, total.
+    - CTA:
+      - Proceed to Checkout button that leads to checkout page.
+
+11. Checkout Page (`app/(shop)/checkout/page.tsx`)
+    - Steps:
+      - Shipping information form.
+      - Payment method (mocked – no real gateway).
+      - Order review.
+    - Implement as:
+      - Single page with stepper UI, or multi‑step form with client state.
+    - On “Place Order”:
+      - Call server action or `/api/orders` to create order, clear cart, redirect to order confirmation.
+
+
+============================================================
+PHASE 4 – AUTH & ACCOUNT AREA
+============================================================
+12. Auth Pages
+    - `login/page.tsx`:
+      - Email/password form, error handling, redirect if already logged in.
+    - `register/page.tsx`:
+      - Name, email, password, confirm password.
+      - Validate strength and uniqueness (simple in‑memory check).
+    - Use server actions and/or API calls to `auth` routes.
+    - On success, set session cookie and redirect to account dashboard (profile or orders).
+
+13. Account Pages
+    - `profile/page.tsx`:
+      - Show basic user info (name, email), allow editing profile (client‑side only or persisted in memory).
+    - `orders/page.tsx`:
+      - List previous orders with status, date, total.
+      - Link to individual order details (optional nested route `[orderId]`).
+    - Protect routes:
+      - Middleware or server‑side checks to redirect unauthenticated users to login.
+
+
+============================================================
+PHASE 5 – CONTENT PAGES & BRANDING
+============================================================
+14. About Page
+    - Brand story section with hero image.
+    - Timeline or grid explaining mission, values, stats.
+    - Team section with placeholder team member photos.
+
+15. Contact Page
+    - Contact form (name, email, message).
+    - Static info: email, phone placeholder, address placeholder, map image placeholder.
+    - Optional: simple API route to “submit” message (log to console or in‑memory).
+
+16. Global Branding Enhancements
+    - Define a consistent color system (primary, accent, neutrals).
+    - Typography scale and spacing.
+    - Button variants: primary, secondary, ghost, link.
+    - Card styles, shadows, hover transitions, focus outlines.
+
+
+============================================================
+PHASE 6 – PLACEHOLDER IMAGES & MEDIA
+============================================================
+17. Gather Placeholder Images (via Web Search)
+    - Search online sources (Unsplash, Pexels, Freepik, etc.) for:
+      - Hero/banner images (high‑res, lifestyle/commerce‑oriented).
+      - Product category images (e.g., fashion, electronics, home decor).
+      - Individual product images (several per product).
+      - Testimonials avatars and team member portraits.
+      - Contact/office imagery.
+    - Document image URLs and attributions (if needed) in a small markdown file.
+
+18. Integrate With `next/image`
+    - Configure `next.config.js` `images.remotePatterns` for external domains.
+    - Replace placeholders in product data and section components.
+    - Ensure responsive image behavior and proper `sizes` for performance.
+
+
+============================================================
+PHASE 7 – MODERN UX, ANIMATIONS & ADVANCED FEATURES
+============================================================
+19. Search & Filters
+    - Implement global search bar in header hitting products API.
+    - Debounced search input with results dropdown.
+    - Deep‑linkable filter state (synced to URL query parameters).
+
+20. Animations & Micro‑Interactions
+    - Add subtle transitions:
+      - Page transitions (fade/slide).
+      - Hover effects on cards and buttons.
+      - Cart icon “bump” animation on add‑to‑cart.
+    - Use Framer Motion or CSS transitions (if kept strictly to Next.js stack, rely on CSS + React).
+
+21. SEO & Performance
+    - Use Next.js metadata for title, description, Open Graph tags.
+    - Structured data (JSON‑LD) for product pages if appropriate.
+    - Optimize LCP: priority hero image, minimal layout shift, prefetch key routes.
+    - Lighthouse pass for performance, accessibility, best practices, SEO.
+
+22. Accessibility
+    - Ensure semantic HTML and ARIA where needed.
+    - Keyboard navigable menus and dialogs.
+    - Sufficient color contrast and focus states.
+
+
+============================================================
+PHASE 8 – TESTING, POLISH & DOCUMENTATION
+============================================================
+23. Testing Core Flows
+    - Manually test:
+      - Browsing products, filters, search.
+      - Product detail and add to cart.
+      - Cart updates and checkout flow.
+      - Auth (register, login, logout).
+      - Orders listing and order creation.
+    - Fix any critical bugs or UX issues exposed.
+
+24. Final Visual Polish
+    - Fine‑tune spacing, typography, and breakpoints.
+    - Ensure consistent use of components across pages.
+    - Add 404 and 500 error pages with good UX and navigation back to shop.
+
+25. Documentation
+    - Create `README.md` with:
+      - Tech stack overview.
+      - Project structure explanation.
+      - How to run the project (dev, build, start).
+      - Notes on data layer and how to plug in a real database or payment provider.
+      - Screenshots and links to key flows.
+
+
+============================================================
+NEXT ACTIONS
+============================================================
+- Initialize the Next.js project in this workspace following Phase 1.
+- Then implement phases incrementally, committing at logical milestones (init, core pages, auth, advanced features, polish).
