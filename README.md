@@ -78,8 +78,8 @@ e-commerce/
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd e-commerce
+git clone https://github.com/streetmonk147/Shophub.git
+cd Shophub
 ```
 
 2. Install dependencies:
